@@ -31,7 +31,7 @@ class TestTHM(unittest.TestCase):
 
     def test_shear_north_negative_scalars(self):
 
-        setup = SetupTHM(ux_south=0, uy_south=0, ux_north=0.01, uy_north=-0.001)
+        setup = SetupTHM(ux_south=0, uy_south=0, ux_north=0.00, uy_north=-0.00)
         setup.with_fracture = False
 
         u, p, T = self._solve(setup)

@@ -177,10 +177,10 @@ class ProblemDataTime:
         return bc
 
     def _bc_type_scalar(self, g):
-        all_bf, _, _, north, south, _, _ = self._domain_boundary_sides(g)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         if g.dim == self._Nd:
-            faces = all_bf
-            type = 'neu'
+            faces = east
+            type = 'dir'
         else:
             faces = north + south
             type = 'dir'

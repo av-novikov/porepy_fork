@@ -251,7 +251,7 @@ class THM(parent_model.ContactMechanicsBiot):
             self.temperature_scale / self.length_scale ** 2 / self.T_0_Kelvin
         )
         kappa: float = 1 * tensor_scale
-        heat_capacity = 1
+        heat_capacity = 2000.0
         mass_weight: float = heat_capacity * self.temperature_scale / self.T_0_Kelvin
         for g, d in self.gb:
             # By default, we set the same type of boundary conditions as for the
@@ -324,13 +324,22 @@ class THM(parent_model.ContactMechanicsBiot):
     @pp.time_logger(sections=module_sections)
     def _bc_type_temperature(self, g: pp.Grid) -> pp.BoundaryCondition:
         # Define boundary regions
-        all_bf, *_ = self._domain_boundary_sides(g)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         # Define boundary condition on faces
-        return pp.BoundaryCondition(g, all_bf, "dir")
+        if g.dim == self._Nd:
+            faces = east
+            type = 'dir'
+        else:
+            faces = north + south
+            type = 'dir'
+        return pp.BoundaryCondition(g, faces, type)
 
     @pp.time_logger(sections=module_sections)
     def _bc_values_temperature(self, g: pp.Grid) -> np.ndarray:
-        return np.zeros(g.num_faces)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
+        values = np.zeros(g.num_faces)
+        values[east] = 0.0
+        return values
 
     @pp.time_logger(sections=module_sections)
     def _source_temperature(self, g: pp.Grid) -> np.ndarray:

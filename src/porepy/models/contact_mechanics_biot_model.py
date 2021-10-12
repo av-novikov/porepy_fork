@@ -89,8 +89,8 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
 
         # Time
         self.time: float = 0
-        self.time_step: float = 1
-        self.end_time: float = 1
+        self.time_step: float = 86400.0 / 24
+        self.end_time: float = 86400.0
 
         # Temperature
         self.scalar_variable: str = "p"
@@ -237,7 +237,7 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
     @pp.time_logger(sections=module_sections)
     def _set_scalar_parameters(self) -> None:
         tensor_scale = self.scalar_scale / self.length_scale ** 2
-        kappa = 1 * tensor_scale
+        kappa = 1.E-5 * tensor_scale
         mass_weight = 1 * self.scalar_scale
         for g, d in self.gb:
             bc = self._bc_type_scalar(g)
@@ -298,9 +298,15 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
     @pp.time_logger(sections=module_sections)
     def _bc_type_scalar(self, g: pp.Grid) -> pp.BoundaryCondition:
         # Define boundary regions
-        all_bf, *_ = self._domain_boundary_sides(g)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         # Define boundary condition on faces
-        return pp.BoundaryCondition(g, all_bf, "dir")
+        if g.dim == self._Nd:
+            faces = east
+            type = 'dir'
+        else:
+            faces = north + south
+            type = 'dir'
+        return pp.BoundaryCondition(g, faces, type)
 
     @pp.time_logger(sections=module_sections)
     def _bc_values_mechanics(self, g: pp.Grid) -> np.ndarray:
@@ -316,7 +322,10 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
         """
         Note that Dirichlet values should be divided by scalar_scale.
         """
-        return np.zeros(g.num_faces)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
+        values = np.zeros(g.num_faces)
+        values[east] = 10 / self.scalar_scale
+        return values
 
     @pp.time_logger(sections=module_sections)
     def _source_mechanics(self, g: pp.Grid) -> np.ndarray:
