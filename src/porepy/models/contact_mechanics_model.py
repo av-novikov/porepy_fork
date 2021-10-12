@@ -429,8 +429,14 @@ class ContactMechanics(porepy.models.abstract_model.AbstractModel):
 
         sol = self.get_state_vector()
         u = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.displacement_variable)]
-        p = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.scalar_variable)]
-        self.viz.write_vtu({'ux': u[::2], 'uy': u[1::2], 'p': p}, time_step=0)
+        data = {'ux': u[::2], 'uy': u[1::2]}
+        if hasattr(self, 'scalar_variable'):
+            p = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.scalar_variable)]
+            data['p'] = p
+        if hasattr(self, 'temperature_variable'):
+            t = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.temperature_variable)]
+            data['t'] = t
+        self.viz.write_vtu(data, time_step=0)
 
     @pp.time_logger(sections=module_sections)
     def after_simulation(self) -> None:

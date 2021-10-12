@@ -56,8 +56,14 @@ def run_time_dependent_model(model, params):
         # vtk output
         sol = model.get_state_vector()
         u = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.displacement_variable)]
-        p = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.scalar_variable)]
-        model.viz.write_vtu({'ux': u[::2], 'uy': u[1::2], 'p': p}, time_step=model.time_index)
+        data = {'ux': u[::2], 'uy': u[1::2]}
+        if hasattr(model, 'scalar_variable'):
+            p = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.scalar_variable)]
+            data['p'] = p
+        if hasattr(model, 'temperature_variable'):
+            t = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.temperature_variable)]
+            data['t'] = t
+        model.viz.write_vtu(data, time_step=model.time_index)
 
     model.after_simulation()
 

@@ -108,7 +108,7 @@ class ProblemDataTime:
             )
             pp.contact_conditions.set_projections(gb)
         else:
-            nx = getattr(self, "nx", [3, 3])
+            nx = getattr(self, "nx", [self.mesh_args["nx"], self.mesh_args["ny"]])
             gb = pp.meshing.cart_grid([], nx, physdims=[1, 1])
             self.box = {"xmin": 0, "ymin": 0, "xmax": 1, "ymax": 1}
         self.gb = gb
