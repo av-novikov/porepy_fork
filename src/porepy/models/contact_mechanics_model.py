@@ -427,6 +427,11 @@ class ContactMechanics(porepy.models.abstract_model.AbstractModel):
             g_max, file_name="mechanics", folder_name=self.viz_folder_name
         )
 
+        sol = self.get_state_vector()
+        u = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.displacement_variable)]
+        p = sol[self.assembler._dof_manager.dof_ind(self._nd_grid(), self.scalar_variable)]
+        self.viz.write_vtu({'ux': u[::2], 'uy': u[1::2], 'p': p}, time_step=self.time_index)
+
     @pp.time_logger(sections=module_sections)
     def after_simulation(self) -> None:
         """Called after a time-dependent problem"""

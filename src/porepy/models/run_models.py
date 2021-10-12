@@ -53,6 +53,12 @@ def run_time_dependent_model(model, params):
         )
         solver.solve(model)
 
+        # vtk output
+        sol = model.get_state_vector()
+        u = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.displacement_variable)]
+        p = sol[model.assembler._dof_manager.dof_ind(model._nd_grid(), model.scalar_variable)]
+        model.viz.write_vtu({'ux': u[::2], 'uy': u[1::2], 'p': p}, time_step=model.time_index)
+
     model.after_simulation()
 
 
