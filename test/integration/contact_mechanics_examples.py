@@ -145,21 +145,25 @@ class ProblemDataTime:
         return values
 
     def _bc_type_mechanics(self, g):
-        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
-        # bc = pp.BoundaryConditionVectorial(g, north+south, "dir")
-        # bc = pp.BoundaryConditionVectorial(g)
-        # bc.is_dir[0, west] = True
-        # bc.is_neu[0, west] = False
-        # bc.is_dir[1, west] = False
-        # bc.is_neu[1, west] = True
-        #
-        # bc.is_dir[0, south] = False
-        # bc.is_neu[0, south] = True
-        # bc.is_dir[1, south] = True
-        # bc.is_neu[1, south] = False
-        #
-        # bc.is_dir[:,north+east] = False
-        # bc.is_neu[:,north+east] = True
+        all_bf, east, west, north, south, zp, zm = self._domain_boundary_sides(g)
+        bc = pp.BoundaryConditionVectorial(g, west+north, "dir")
+        #bc = pp.BoundaryConditionVectorial(g, north+east, "neu")
+        # roller west
+        #bc.is_dir[1, west] = True
+        #bc.is_neu[0, west] = False
+        #bc.is_dir[1, west] = False
+        bc.is_neu[1, west] = True
+        bc.is_dir[1, west] = False
+        # roller south
+        #bc.is_dir[0, south] = False
+        bc.is_neu[0, north] = True
+        bc.is_dir[0, north] = False
+        #bc.is_dir[0, south] = True
+        #bc.is_neu[1, south] = False
+
+        # Neumann north+east
+        #bc.is_dir[:,north+east] = False
+        #bc.is_neu[:,north+east] = True
         # # bc.is_neu[:,north] = True
         # # Default internal BC is Neumann. We change to Dirichlet for the contact
         # # problem. I.e., the mortar variable represents the displacement on the
@@ -167,13 +171,13 @@ class ProblemDataTime:
         # frac_face = g.tags["fracture_faces"]
         # bc.is_neu[:, frac_face] = False
         # bc.is_dir[:, frac_face] = True
-        bc = pp.BoundaryConditionVectorial(g, north + south, "dir")
+        # bc = pp.BoundaryConditionVectorial(g, north + south, "dir")
         # Default internal BC is Neumann. We change to Dirichlet for the contact
         # problem. I.e., the mortar variable represents the displacement on the
         # fracture faces.
-        frac_face = g.tags["fracture_faces"]
-        bc.is_neu[:, frac_face] = False
-        bc.is_dir[:, frac_face] = True
+        # frac_face = g.tags["fracture_faces"]
+        # bc.is_neu[:, frac_face] = False
+        # bc.is_dir[:, frac_face] = True
         return bc
 
     def _bc_type_scalar(self, g):
@@ -189,14 +193,17 @@ class ProblemDataTime:
         return pp.BoundaryCondition(g, faces, type)
 
     def _bc_type_temperature(self, g):
-        _, _, _, north, south, _, _ = self._domain_boundary_sides(g)
+        all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         # Define boundary condition on faces
-        return pp.BoundaryCondition(g, north + south, "dir")
+        return pp.BoundaryCondition(g, east, "dir")
 
     def _bc_values_mechanics(self, g):
         # Set the boundary values
         all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         values = np.zeros((g.dim, g.num_faces))
+
+        values[:, east+west+north] = 0.0
+        values[1, south] = -0.0001
 
         #values[0, south] = self.ux_south * (self.time > 0.1)
         #values[1, south] = self.uy_south * (self.time > 0.1)
@@ -206,10 +213,10 @@ class ProblemDataTime:
         # values[1, north] = -0.01
         # values[0, east] = 0
 
-        values[0, south] = self.ux_south * (self.time > 0.1)
-        values[1, south] = self.uy_south * (self.time > 0.1)
-        values[0, north] = self.ux_north * (self.time > 0.1)
-        values[1, north] = self.uy_north * (self.time > 0.1)
+        # values[0, south] = self.ux_south * (self.time > 0.1)
+        # values[1, south] = self.uy_south * (self.time > 0.1)
+        # values[0, north] = self.ux_north * (self.time > 0.1)
+        # values[1, north] = self.uy_north * (self.time > 0.1)
 
         return values.ravel("F")
 

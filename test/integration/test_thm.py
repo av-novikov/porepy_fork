@@ -286,8 +286,8 @@ class SetupTHM(ProblemDataTime, model.THM):
             "mesh_size_frac": 0.01,
             "mesh_size_min": 0.01,
             "mesh_size_bound": 0.01,
-            "nx": 30,
-            "ny": 30
+            "nx": 20,
+            "ny": 20
         }
 
         super().__init__()

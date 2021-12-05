@@ -196,8 +196,10 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
         for g, d in gb:
             if g.dim == self._Nd:
                 # Rock parameters
-                lam = np.ones(g.num_cells) / self.scalar_scale
-                mu = np.ones(g.num_cells) / self.scalar_scale
+                E = 10000
+                nu = 0.25
+                lam = E*nu / (1+nu) / (1-2*nu) * np.ones(g.num_cells) / self.scalar_scale
+                mu = E / 2 / (1 + nu) * np.ones(g.num_cells) / self.scalar_scale
                 C = pp.FourthOrderTensor(mu, lam)
 
                 # Define boundary condition
@@ -217,7 +219,7 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
                         "fourth_order_tensor": C,
                         "time_step": self.time_step,
                         "biot_alpha": self._biot_alpha(g),
-                        "p_reference": np.zeros(g.num_cells),
+                        "p_reference": self.p_ref * np.ones(g.num_cells),
                     },
                 )
 
@@ -239,6 +241,7 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
         tensor_scale = self.scalar_scale / self.length_scale ** 2
         kappa = 1.E-5 * tensor_scale
         mass_weight = 1 * self.scalar_scale
+        self.p_ref = 0
         for g, d in self.gb:
             bc = self._bc_type_scalar(g)
             bc_values = self._bc_values_scalar(g)
@@ -324,7 +327,7 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
         """
         all_bf, east, west, north, south, _, _ = self._domain_boundary_sides(g)
         values = np.zeros(g.num_faces)
-        values[east] = 10 / self.scalar_scale
+        values[east] = self.p_ref / self.scalar_scale
         return values
 
     @pp.time_logger(sections=module_sections)
@@ -871,7 +874,7 @@ class ContactMechanicsBiot(contact_model.ContactMechanics):
 
         for g, d in self.gb:
             # Initial value for the scalar variable.
-            initial_scalar_value = np.zeros(g.num_cells)
+            initial_scalar_value = self.p_ref * np.ones(g.num_cells)
             d[pp.STATE].update({self.scalar_variable: initial_scalar_value})
 
             d[pp.STATE][pp.ITERATE].update(

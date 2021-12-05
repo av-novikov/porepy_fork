@@ -222,7 +222,7 @@ class THM(parent_model.ContactMechanicsBiot):
                     {
                         "biot_alpha": self._biot_beta(g),
                         "bc_values": self._bc_values_mechanics(g),
-                        "p_reference": np.zeros(g.num_cells),
+                        "p_reference": self.p_ref * np.ones(g.num_cells),
                     },
                 )
 
@@ -357,7 +357,7 @@ class THM(parent_model.ContactMechanicsBiot):
         """
         TH coupling coefficient
         """
-        return -1.0
+        return 0.0
 
     @pp.time_logger(sections=module_sections)
     def _assign_variables(self) -> None:
